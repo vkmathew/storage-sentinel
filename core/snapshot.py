@@ -1,32 +1,24 @@
 # core/snapshot.py
 import os
-import csv
-from datetime import datetime
 from core.scanner import scan_directory
+from core.db import initialize_db, insert_snapshot, insert_file
 
-def save_snapshot(base_path=".", output_dir="data"):
-    """Run a scan and save results to a timestamped CSV file."""
-    os.makedirs(output_dir, exist_ok=True)
+def save_snapshot_to_db(base_path="."):
+    """Perform a scan and save results into SQLite database."""
+    initialize_db()
+    snapshot_id = insert_snapshot()
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_path = os.path.join(output_dir, f"snapshot_{timestamp}.csv")
-
-    fieldnames = ["path", "size_bytes", "modified", "type"]
-    count = 0
+    file_count = 0
     total_size = 0
 
-    with open(out_path, "w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        for info in scan_directory(base_path):
-            writer.writerow(info)
-            count += 1
-            total_size += info["size_bytes"]
+    for info in scan_directory(base_path):
+        insert_file(snapshot_id, info)
+        file_count += 1
+        total_size += info["size_bytes"]
 
-    print(f"\nSnapshot saved: {out_path}")
-    print(f"Total files scanned: {count}")
-    print(f"Total size: {total_size/1024/1024:.2f} MB")
+    print(f"\nSnapshot ID: {snapshot_id}")
+    print(f"Scanned {file_count} files totaling {total_size/1024/1024:.2f} MB")
 
 if __name__ == "__main__":
     folder = input("Enter directory to snapshot (blank = current): ").strip() or "."
-    save_snapshot(folder)
+    save_snapshot_to_db(folder)
