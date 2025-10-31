@@ -1,5 +1,6 @@
 # run.py
 import os
+from core.logger import log
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -26,6 +27,7 @@ def show_menu():
             from core.snapshot import save_snapshot_to_db
             folder = input("Enter directory to snapshot (blank = current): ").strip() or "."
             save_snapshot_to_db(folder)
+            log(f"Snapshot taken for directory: {folder}", "SUCCESS")
             pause()
 
         elif choice == "2":
@@ -34,6 +36,7 @@ def show_menu():
             # (Placeholder) For now, this only imports the function.
             # We'll extend it later to compare DB snapshots.
             print("Compare feature placeholder — coming soon!")
+            log("Compare executed (placeholder).", "INFO")
             pause()
 
         elif choice == "3":
@@ -41,6 +44,7 @@ def show_menu():
             from core.stats import query_db, print_report
             stats = query_db()
             print_report(stats)
+            log("Stats report generated successfully.", "SUCCESS")
             pause()
 
         elif choice == "4":
